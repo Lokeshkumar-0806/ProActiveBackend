@@ -7,7 +7,26 @@ const port = process.env.PORT || 5000
 
 connectDB()
 
-app.use(cors({ origin: 'http://localhost:5173' }))
+// CORS configuration for production and development
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://proactive-frontend.vercel.app', // Add your actual frontend Vercel URL
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({ 
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}))
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -23,9 +42,12 @@ app.use('/api', require('./Routes/CreateGoal'))
 
 app.use("/api", require("./Routes/aiRoutes"));
 
+// Export for Vercel serverless
+module.exports = app;
 
-
-
+// Only listen if not in serverless environment
+if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+    console.log(`Example app listening on port ${port}`)
+  })
+}
