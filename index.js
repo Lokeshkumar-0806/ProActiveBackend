@@ -41,12 +41,10 @@ app.use('/api', require('./Routes/CreateGoal'))
 
 app.use("/api", require("./Routes/aiRoutes"));
 
-// Export for Vercel serverless
+// Export for serverless platforms (Vercel)
 module.exports = app;
 
-// Only listen if not in serverless environment
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-  })
-}
+// Start server (required for Render and local development)
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`)
+})
